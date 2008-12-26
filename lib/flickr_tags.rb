@@ -1,14 +1,14 @@
 module FlickrTags
   include Radiant::Taggable
   
-  def get_flickr_iframe(user, param_name, param_val)
+  def get_flickr_iframe(user, param_name, param_val, attr_type='sets')
+    #user='danielhale'
+    value_url = "&offsite=true&lang=en-us&page_show_url=%2Fphotos%2F#{user}%2F#{attr_type}%2F#{param_val}&page_show_back_url=%2Fphotos%2F#{user}%2F#{attr_type}%2F#{param_val}%2F&#{param_name}=#{param_val}&jump_to="
 <<EOS
-  <iframe align="center" src="http://www.flickr.com/slideShow/index.gne?user_id=#{user}&#{param_name}=#{param_val}" 
-    frameBorder="0" width="500" scrolling="no" height="500"></iframe>
+  <object width="500" height="375"> <param name="flashvars" value="#{value_url}"></param> <param name="movie" value="http://www.flickr.com/apps/slideshow/show.swf?v=63961"></param> <param name="allowFullScreen" value="true"></param><embed type="application/x-shockwave-flash" src="http://www.flickr.com/apps/slideshow/show.swf?v=63961" allowFullScreen="true" flashvars="#{value_url}" width="500" height="375"></embed></object>
 EOS
   end
 
-  
   tag "flickr" do |tag|
     tag.expand
   end
@@ -23,9 +23,9 @@ EOS
     end
     
     if attr[:set]
-      get_flickr_iframe user, 'set_id', attr[:set].strip
+      get_flickr_iframe user, 'set_id', attr[:set].strip, 'sets'
     elsif attr[:tags]
-      get_flickr_iframe user, 'tags', attr[:tags].strip
+      get_flickr_iframe user, 'tags', attr[:tags].strip, 'tags'
     else
       raise StandardError.new("Please provide a Flickr set ID in the flickr:slideshow tag's `set` attribute or a comma-separated list of Flickr tags in the `tags` attribute")
     end 
