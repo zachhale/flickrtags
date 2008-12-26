@@ -1,11 +1,10 @@
 module FlickrTags
   include Radiant::Taggable
   
-  def get_flickr_iframe(user, param_name, param_val, attr_type='sets')
-    #user='danielhale'
-    value_url = "&offsite=true&lang=en-us&page_show_url=%2Fphotos%2F#{user}%2F#{attr_type}%2F#{param_val}&page_show_back_url=%2Fphotos%2F#{user}%2F#{attr_type}%2F#{param_val}%2F&#{param_name}=#{param_val}&jump_to="
+  def get_flickr_iframe(user, param_name, param_val, attr_type, width, height)
+    value_url = "&offsite=true&lang=en-us&page_show_url=%2Fphotos%2F#{user}%2F#{attr_type}%2F#{param_val}%2Fshow%2F&page_show_back_url=%2Fphotos%2F#{user}%2F#{attr_type}%2F#{param_val}%2F&#{param_name}=#{param_val}&jump_to="
 <<EOS
-  <object width="500" height="375"> <param name="flashvars" value="#{value_url}"></param> <param name="movie" value="http://www.flickr.com/apps/slideshow/show.swf?v=63961"></param> <param name="allowFullScreen" value="true"></param><embed type="application/x-shockwave-flash" src="http://www.flickr.com/apps/slideshow/show.swf?v=63961" allowFullScreen="true" flashvars="#{value_url}" width="500" height="375"></embed></object>
+  <object width="#{width}" height="#{height}"> <param name="flashvars" value="#{value_url}"></param> <param name="movie" value="http://www.flickr.com/apps/slideshow/show.swf?v=63961"></param> <param name="allowFullScreen" value="true"></param><embed type="application/x-shockwave-flash" src="http://www.flickr.com/apps/slideshow/show.swf?v=63961" allowFullScreen="true" flashvars="#{value_url}" width="#{width}" height="#{height}"></embed></object>
 EOS
   end
 
@@ -22,10 +21,27 @@ EOS
       raise StandardError.new("Please provide a Flickr user name in the flickr:slideshow tag's `user` attribute")
     end
     
+    if (attr[:size])
+      case attr[:size].strip
+      when 'small'
+        width,height = 400,300
+      when 'medium'
+        width,height = 500,375
+      when 'large'
+        width,height = 700,525
+      when 'super-sized'
+        width,height = 800,600
+      end
+    elsif (attr[:width]) and (attr[:size])
+      width,height = attr[:width].strip, attr[:height].strip
+    else
+      width,height = 500,375
+    end   
+    
     if attr[:set]
-      get_flickr_iframe user, 'set_id', attr[:set].strip, 'sets'
+      get_flickr_iframe user, 'set_id', attr[:set].strip, 'sets', width, height
     elsif attr[:tags]
-      get_flickr_iframe user, 'tags', attr[:tags].strip, 'tags'
+      get_flickr_iframe user, 'tags', attr[:tags].strip, 'tags', width, height
     else
       raise StandardError.new("Please provide a Flickr set ID in the flickr:slideshow tag's `set` attribute or a comma-separated list of Flickr tags in the `tags` attribute")
     end 
